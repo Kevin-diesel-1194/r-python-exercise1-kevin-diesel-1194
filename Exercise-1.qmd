@@ -1,0 +1,226 @@
+---
+title: "Exercise 1"
+format: html
+editor: visual
+---
+
+```{r}
+# First run this
+install.packages("pacman")
+
+```
+
+### Libraries
+
+```{r}
+library(pacman)
+
+p_load(dlookr,
+       DMwR2, # Data Mining with R functions
+       GGally, # Pair-wise plots using ggplot2
+       Hmisc, # Data analysis 
+       palmerpenguins, # Alternative to the Iris dataset
+       tidyverse) # Data wrangling, manipulation, visualization
+```
+
+### Loading the Data
+
+```{r}
+data(algae, package = "DMwR2")
+
+algae |> glimpse()    
+```
+
+### Central Tendencies: Mean, Median & Mode
+
+### Mean
+
+```{r}
+algae$a1 |>
+  mean()      #Returns mean of col a1
+
+```
+
+### Median
+
+```{r}
+algae$a1 |>
+  median()    #Returns median of col a1
+
+```
+
+### Mode
+
+```{r}
+#Function for Mode
+
+Mode <- function(x, na.rm=FALSE){
+if(na.rm) x<-x[!is.na(x)] #Checking the similarity
+ux <- unique (x) #Storing unique values in ux
+return (ux[which.max(tabulate(match(x, ux)))]) #Returns the freq of each of the unique values
+}
+
+algae$a2 |> Mode()
+
+```
+
+### DMwR centralValue() function:
+
+```{r}
+# Numerical variable
+algae$a1 |> centralValue() #returns median for numeric
+```
+
+```{r}
+# Numerical variable
+algae$speed |> centralValue() #returns mode for nominal
+
+```
+
+### Statistics of spread
+
+### Variance
+
+```{r}
+algae$a1 |> var() # returns variance of col a1
+```
+
+### Standard deviation
+
+```{r}
+algae$a1 |> sd() # returns standard deviation of col a1
+```
+
+### Range
+
+```{r}
+algae$a1 |> range() # returns teh range of the col a1
+```
+
+### Maximum Value
+
+```{r}
+algae$a1 |> max() # returns the maximum value in a1
+```
+
+### Minimum Value
+
+```{r}
+algae$a1 |> min() # returns the minimum value in a
+```
+
+### Interquartile
+
+```{r}
+algae$a1 |> IQR() # returns the IQR of a
+```
+
+### Quantiles
+
+```{r}
+algae$a1 |> quantile() # returns quantils of a1
+```
+
+```{r}
+algae$a1 |> quantile(probs = c(0.2, 0.8)) # specific quantiles
+```
+
+### Missing values
+
+```{r}
+library(purrr)
+# Computes the total number of NA values in the dataset
+nas <- algae %>%                              
+  purrr::map_dbl(~sum(is.na(.))) %>% 
+  sum()
+
+cat("The dataset contains ", nas, "NA values. \n")
+```
+
+```{r}
+# Computes the number of incomplete rows in the dataset
+incomplete_rows <- algae %>% 
+  summarise_all(~!complete.cases(.)) %>%
+  nrow()
+```
+
+```{r}
+cat("The dataset contains ", incomplete_rows, "(out of ", nrow(algae),") incomplete rows. \n")
+
+```
+
+### Summaries of a Dataset
+
+```{r}
+algae |> summary()
+```
+
+### Hmisc's describe()
+
+```{r}
+data("penguins")
+penguins |> Hmisc::describe()
+```
+
+### dlookr's describe()
+
+```{r}
+penguins |> dlookr::describe()
+```
+
+### Summaries on a subset of data
+
+```{r}
+algae |>
+  summarise(avgNO3 = mean(NO3, na.rm=TRUE),
+            medA1 = median(a1))
+```
+
+```{r}
+algae |>
+  select(mxPH:Cl) |>
+  summarise_all(list(mean, median), na.rm = TRUE)
+```
+
+```{r}
+algae |>
+  select(a1:a7) |>
+  summarise_all(funs(var))
+
+```
+
+```{r}
+algae |>
+  select(a1:a7) |>
+  summarise_all(c("min", "max"))
+```
+
+### Use summarise() with group_by()
+
+```{r}
+algae |>
+  group_by(season, size) |>
+  summarise(nObs = n(), mA7 = median(a7))
+```
+
+```{r}
+penguins |> 
+  group_by(species) |>
+  summarise(var = var(bill_length_mm, na.rm = TRUE))
+```
+
+### Aggregating data
+
+```{r}
+#Can be helpful for summary functions that don’t return a scalar
+
+penguins |>
+  group_by(species) |>
+  reframe(var = quantile(bill_length_mm, na.rm = TRUE))
+```
+
+```{r}
+penguins |>
+  group_by(species) |>
+  dlookr::describe(bill_length_mm)
+```
